@@ -51,6 +51,10 @@ export async function getStockTakes() {
   return request('/stocktake');
 }
 
+export async function getStockTakeItems(stockTakeId) {
+  return request(`/stocktake/${stockTakeId}/items`);
+}
+
 export async function finaliseStockTake(stockTakeId, items, staffId) {
   return request(`/stocktake/${stockTakeId}/finalise`, {
     method: 'POST',

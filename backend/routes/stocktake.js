@@ -15,16 +15,17 @@ router.post('/', async (req, res) => {
       .input('type', sql.VarChar(20), 'MOBILE')
       .input('orderByGenericName', sql.Int, 0)
       .query(`
-        INSERT INTO [dbo].[StockTake] (DateCreated, Type, OrderByGenericName, StockTakeGuid, StockTakeDateModified)
-        OUTPUT INSERTED.StockTakeID
-        VALUES (GETDATE(), @type, @orderByGenericName, NEWID(), GETDATE())
+        DECLARE @nextId INT = (SELECT ISNULL(MAX(StockTakeID), 0) + 1 FROM [dbo].[StockTake]);
+        INSERT INTO [dbo].[StockTake] (StockTakeID, DateCreated, Type, OrderByGenericName, StockTakeGuid, StockTakeDateModified)
+        VALUES (@nextId, GETDATE(), @type, @orderByGenericName, NEWID(), GETDATE());
+        SELECT @nextId AS StockTakeID;
       `);
 
     const stockTakeId = result.recordset[0].StockTakeID;
     res.json({ stockTakeId });
   } catch (err) {
     console.error('Create stock take error:', err);
-    res.status(500).json({ error: 'Database error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -42,6 +43,41 @@ router.get('/', async (req, res) => {
   } catch (err) {
     console.error('List stock takes error:', err);
     res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Get items for a completed stock take
+router.get('/:id/items', async (req, res) => {
+  const stockTakeId = parseInt(req.params.id, 10);
+  const reasonId = config.stockTake.reasonId;
+  try {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('stockTakeId', sql.Int, stockTakeId)
+      .input('reasonId', sql.Int, reasonId)
+      .query(`
+        SELECT
+          sti.StockID,
+          s.TradeName,
+          sh.SOHBeforeSubtractInUnits AS soh,
+          (sh.SOHBeforeSubtractInUnits - sh.QuantitySubtracted) AS countedQty
+        FROM [dbo].[StockTakeItems] sti
+        INNER JOIN [dbo].[Stock] s ON s.StockID = sti.StockID
+        INNER JOIN [dbo].[StockTake] st ON st.StockTakeID = sti.StockTakeID
+        OUTER APPLY (
+          SELECT TOP 1 SOHBeforeSubtractInUnits, QuantitySubtracted
+          FROM [dbo].[Shrinkage]
+          WHERE StockId = sti.StockID
+            AND ReasonID = @reasonId
+            AND DateTime >= st.DateCreated
+          ORDER BY DateTime ASC
+        ) sh
+        WHERE sti.StockTakeID = @stockTakeId
+      `);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('Get stock take items error:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -77,6 +113,16 @@ router.post('/:id/finalise', async (req, res) => {
               (StockTakeID, StockID, StockTakeItemsGuid, StockTakeItemsDateModified)
             VALUES
               (@stockTakeId, @stockId, NEWID(), GETDATE())
+          `);
+
+        // Update SOH on Stock
+        await new sql.Request(transaction)
+          .input('stockId', sql.Int, stockId)
+          .input('countedQty', sql.Decimal(10, 3), countedQty)
+          .query(`
+            UPDATE [dbo].[Stock]
+            SET SOH = @countedQty
+            WHERE StockID = @stockId
           `);
 
         // Insert into Shrinkage

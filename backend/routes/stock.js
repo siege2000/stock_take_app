@@ -7,16 +7,18 @@ const router = express.Router();
 router.get('/lookup', async (req, res) => {
   const { plu } = req.query;
   if (!plu) return res.status(400).json({ error: 'PLU required' });
+  console.log(`Barcode lookup: "${plu}" (length: ${plu.length})`);
 
   try {
     const pool = await getPool();
     const result = await pool.request()
-      .input('plu', sql.Int, parseInt(plu, 10))
+      .input('barcode', sql.VarChar(50), plu)
       .query(`
-        SELECT StockID, TradeName, SOH, PackSize
-        FROM [dbo].[Stock]
-        WHERE PLU = @plu
-          AND skDeleted = 0
+        SELECT s.StockID, s.TradeName, s.SOH, s.PackSize
+        FROM [dbo].[Stock] s
+        INNER JOIN [dbo].[Barcode] b ON b.StockID = s.StockID
+        WHERE b.Barcode = @barcode
+          AND s.skDeleted = 0
       `);
 
     if (result.recordset.length === 0) {

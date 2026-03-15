@@ -20,11 +20,9 @@ export default function App() {
           const reg = await registerDevice(null, deviceName);
           token = reg.token;
           localStorage.setItem('deviceToken', token);
-          setDeviceStatus('pending');
-        } else {
-          const status = await checkDeviceStatus();
-          setDeviceStatus(status.approved ? 'approved' : 'pending');
         }
+        const status = await checkDeviceStatus();
+        setDeviceStatus(status.approved ? 'approved' : 'pending');
       } catch {
         setDeviceStatus('error');
       }

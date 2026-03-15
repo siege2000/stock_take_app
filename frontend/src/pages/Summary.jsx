@@ -5,6 +5,7 @@ export default function Summary({ stockTakeId, counts, onBack, onFinalised }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [confirmed, setConfirmed] = useState(false);
+  const [finalised, setFinalised] = useState(false);
 
   const items = Object.entries(counts).map(([stockId, item]) => ({
     stockId: parseInt(stockId, 10),
@@ -19,12 +20,97 @@ export default function Summary({ stockTakeId, counts, onBack, onFinalised }) {
     setError('');
     try {
       await finaliseStockTake(stockTakeId, items);
-      onFinalised();
+      setFinalised(true);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleExportPDF() {
+    window.print();
+  }
+
+  if (finalised) {
+    return (
+      <>
+        <style>{`
+          @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { margin: 0; font-family: sans-serif; }
+          }
+          .print-only { display: none; }
+        `}</style>
+
+        {/* Screen view */}
+        <div style={s.page} className="no-print">
+          <div style={s.header}>
+            <div style={s.headerTitle}>Stock Take Complete</div>
+            <div style={s.headerSub}>#{stockTakeId} — {items.length} items saved</div>
+          </div>
+
+          <div style={s.tableWrap}>
+            <div style={s.tableHeader}>
+              <span style={{ ...s.col, flex: 3 }}>Item</span>
+              <span style={{ ...s.col, ...s.right }}>SOH</span>
+              <span style={{ ...s.col, ...s.right }}>Counted</span>
+              <span style={{ ...s.col, ...s.right }}>Variance</span>
+            </div>
+            {items.map((item) => (
+              <div key={item.stockId} style={{ ...s.row, background: item.variance !== 0 ? '#fffbeb' : '#fff' }}>
+                <span style={{ ...s.col, flex: 3, fontWeight: 500, color: '#111827' }}>{item.tradeName}</span>
+                <span style={{ ...s.col, ...s.right, color: '#6b7280' }}>{item.soh}</span>
+                <span style={{ ...s.col, ...s.right, color: '#1d4ed8', fontWeight: 700 }}>{item.countedQty}</span>
+                <span style={{
+                  ...s.col, ...s.right, fontWeight: 700,
+                  color: item.variance > 0 ? '#dc2626' : item.variance < 0 ? '#16a34a' : '#6b7280',
+                }}>
+                  {item.variance > 0 ? `-${item.variance}` : item.variance < 0 ? `+${Math.abs(item.variance)}` : '0'}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div style={s.footer}>
+            <button style={s.pdfBtn} onClick={handleExportPDF}>Export to PDF</button>
+            <button style={s.doneBtn} onClick={onFinalised}>Done</button>
+          </div>
+        </div>
+
+        {/* Print-only view */}
+        <div className="print-only" style={{ padding: 24 }}>
+          <h2 style={{ marginBottom: 4 }}>Stock Take #{stockTakeId}</h2>
+          <p style={{ color: '#555', marginBottom: 16, fontSize: 13 }}>
+            Printed: {new Date().toLocaleString()}
+          </p>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ background: '#f3f4f6' }}>
+                <th style={pt.th}>Item</th>
+                <th style={{ ...pt.th, textAlign: 'right' }}>SOH</th>
+                <th style={{ ...pt.th, textAlign: 'right' }}>Counted</th>
+                <th style={{ ...pt.th, textAlign: 'right' }}>Variance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.stockId}>
+                  <td style={pt.td}>{item.tradeName}</td>
+                  <td style={{ ...pt.td, textAlign: 'right' }}>{item.soh}</td>
+                  <td style={{ ...pt.td, textAlign: 'right' }}>{item.countedQty}</td>
+                  <td style={{ ...pt.td, textAlign: 'right' }}>
+                    {item.variance > 0 ? `-${item.variance}` : item.variance < 0 ? `+${Math.abs(item.variance)}` : '0'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p style={{ marginTop: 16, fontSize: 12, color: '#888' }}>Total items: {items.length}</p>
+        </div>
+      </>
+    );
   }
 
   return (
@@ -45,7 +131,6 @@ export default function Summary({ stockTakeId, counts, onBack, onFinalised }) {
           <span style={{ ...s.col, ...s.right }}>Counted</span>
           <span style={{ ...s.col, ...s.right }}>Variance</span>
         </div>
-
         {items.map((item) => (
           <div key={item.stockId} style={{ ...s.row, background: item.variance !== 0 ? '#fffbeb' : '#fff' }}>
             <span style={{ ...s.col, flex: 3, fontWeight: 500, color: '#111827' }}>{item.tradeName}</span>
@@ -63,7 +148,6 @@ export default function Summary({ stockTakeId, counts, onBack, onFinalised }) {
 
       <div style={s.footer}>
         {error && <p style={s.error}>{error}</p>}
-
         {!confirmed ? (
           <button style={s.confirmBtn} onClick={() => setConfirmed(true)} disabled={items.length === 0}>
             Finalise Stock Take
@@ -98,7 +182,7 @@ const s = {
   col: { fontSize: 13, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, flex: 1 },
   right: { textAlign: 'right' },
   row: { display: 'flex', padding: '12px 16px', borderBottom: '1px solid #f3f4f6', alignItems: 'center' },
-  footer: { padding: 16 },
+  footer: { padding: 16, display: 'flex', flexDirection: 'column', gap: 10 },
   error: { color: '#dc2626', fontSize: 14, marginBottom: 12, textAlign: 'center' },
   confirmBtn: { width: '100%', background: '#1d4ed8', color: '#fff', border: 'none', borderRadius: 8, padding: 16, fontSize: 17, fontWeight: 700, cursor: 'pointer' },
   confirmBox: { background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' },
@@ -106,4 +190,11 @@ const s = {
   confirmBtns: { display: 'flex', gap: 12 },
   cancelBtn: { flex: 1, background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 8, padding: 14, fontSize: 16, fontWeight: 600, cursor: 'pointer' },
   submitBtn: { flex: 2, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 8, padding: 14, fontSize: 16, fontWeight: 700, cursor: 'pointer' },
+  pdfBtn: { width: '100%', background: '#1d4ed8', color: '#fff', border: 'none', borderRadius: 8, padding: 16, fontSize: 17, fontWeight: 700, cursor: 'pointer' },
+  doneBtn: { width: '100%', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 8, padding: 14, fontSize: 16, fontWeight: 600, cursor: 'pointer' },
+};
+
+const pt = {
+  th: { padding: '8px 10px', borderBottom: '2px solid #ccc', textAlign: 'left', fontWeight: 700 },
+  td: { padding: '7px 10px', borderBottom: '1px solid #eee' },
 };

@@ -9,7 +9,7 @@ export default function Home({ onStart }) {
 
   useEffect(() => {
     getStockTakes()
-      .then(setRecentTakes)
+      .then((all) => setRecentTakes(all.filter((st) => localStorage.getItem(`counts_${st.StockTakeID}`))))
       .catch(() => {});
   }, []);
 

@@ -1,37 +1,61 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
+import { BarcodeFormat, DecodeHintType } from '@zxing/library';
 import { lookupStock } from '../api';
 
 export default function Scanner({ stockTakeId, counts, onScan, onManualCount, onReview }) {
   const videoRef = useRef(null);
   const readerRef = useRef(null);
-  const [lastScanned, setLastScanned] = useState(null); // { stockId, tradeName, soh, countedQty }
+  const [lastScanned, setLastScanned] = useState(null);
   const [scanError, setScanError] = useState('');
-  const [editingQty, setEditingQty] = useState(null); // stockId being edited
+  const [editingQty, setEditingQty] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [cameraError, setCameraError] = useState('');
+  const [cameras, setCameras] = useState([]);
+  const [selectedCamera, setSelectedCamera] = useState(null);
+  const [showCameraPicker, setShowCameraPicker] = useState(false);
   const lastPluRef = useRef('');
   const cooldownRef = useRef(false);
 
   useEffect(() => {
-    startCamera();
-    return () => stopCamera();
+    BrowserMultiFormatReader.listVideoInputDevices().then((devices) => {
+      setCameras(devices);
+      // Default to the last rear-facing camera (usually the main one on multi-lens phones)
+      const rearCams = devices.filter((d) =>
+        d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('rear')
+      );
+      const defaultCam = rearCams.length > 0 ? rearCams[rearCams.length - 1] : devices[devices.length - 1];
+      if (defaultCam) setSelectedCamera(defaultCam.deviceId);
+    });
   }, []);
 
-  async function startCamera() {
+  useEffect(() => {
+    if (!selectedCamera) return;
+    stopCamera();
+    startCamera(selectedCamera);
+    return () => stopCamera();
+  }, [selectedCamera]);
+
+  async function startCamera(deviceId) {
     try {
-      const reader = new BrowserMultiFormatReader();
+      const hints = new Map();
+      hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+        BarcodeFormat.EAN_13,
+        BarcodeFormat.EAN_8,
+        BarcodeFormat.UPC_A,
+        BarcodeFormat.UPC_E,
+        BarcodeFormat.CODE_128,
+        BarcodeFormat.CODE_39,
+      ]);
+      const reader = new BrowserMultiFormatReader(hints);
       readerRef.current = reader;
-      await reader.decodeFromVideoDevice(undefined, videoRef.current, async (result, err) => {
+      await reader.decodeFromVideoDevice(deviceId, videoRef.current, async (result) => {
         if (!result) return;
         const plu = result.getText();
-
-        // Debounce: ignore same PLU within 2 seconds
         if (plu === lastPluRef.current || cooldownRef.current) return;
         lastPluRef.current = plu;
         cooldownRef.current = true;
         setTimeout(() => { cooldownRef.current = false; }, 2000);
-
         await processBarcode(plu);
       });
     } catch (err) {
@@ -42,6 +66,7 @@ export default function Scanner({ stockTakeId, counts, onScan, onManualCount, on
   function stopCamera() {
     if (readerRef.current) {
       BrowserMultiFormatReader.releaseAllStreams();
+      readerRef.current = null;
     }
   }
 
@@ -50,11 +75,7 @@ export default function Scanner({ stockTakeId, counts, onScan, onManualCount, on
     try {
       const item = await lookupStock(plu);
       onScan({ stockId: item.StockID, tradeName: item.TradeName, soh: item.SOH });
-      setLastScanned({
-        stockId: item.StockID,
-        tradeName: item.TradeName,
-        soh: item.SOH,
-      });
+      setLastScanned({ stockId: item.StockID, tradeName: item.TradeName, soh: item.SOH });
     } catch (err) {
       setScanError(`Not found: ${plu}`);
       setLastScanned(null);
@@ -74,12 +95,15 @@ export default function Scanner({ stockTakeId, counts, onScan, onManualCount, on
     const qty = parseFloat(editValue);
     if (!isNaN(qty) && qty >= 0) {
       onManualCount(stockId, qty);
-      if (lastScanned?.stockId === stockId) {
-        setLastScanned((prev) => ({ ...prev }));
-      }
+      if (lastScanned?.stockId === stockId) setLastScanned((prev) => ({ ...prev }));
     }
     setEditingQty(null);
-    startCamera();
+    if (selectedCamera) startCamera(selectedCamera);
+  }
+
+  function switchCamera(deviceId) {
+    setSelectedCamera(deviceId);
+    setShowCameraPicker(false);
   }
 
   return (
@@ -90,10 +114,32 @@ export default function Scanner({ stockTakeId, counts, onScan, onManualCount, on
           <div style={s.headerTitle}>Scanning</div>
           <div style={s.headerSub}>Stock Take #{stockTakeId}</div>
         </div>
-        <button style={s.reviewBtn} onClick={onReview}>
-          Review ({totalItems})
-        </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {cameras.length > 1 && (
+            <button style={s.camBtn} onClick={() => setShowCameraPicker((v) => !v)}>
+              Camera
+            </button>
+          )}
+          <button style={s.reviewBtn} onClick={onReview}>
+            Review ({totalItems})
+          </button>
+        </div>
       </div>
+
+      {/* Camera picker */}
+      {showCameraPicker && (
+        <div style={s.cameraPicker}>
+          {cameras.map((cam) => (
+            <button
+              key={cam.deviceId}
+              style={{ ...s.cameraOption, ...(cam.deviceId === selectedCamera ? s.cameraOptionActive : {}) }}
+              onClick={() => switchCamera(cam.deviceId)}
+            >
+              {cam.label || `Camera ${cam.deviceId.slice(0, 8)}`}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Camera */}
       <div style={s.cameraWrap}>
@@ -139,9 +185,7 @@ export default function Scanner({ stockTakeId, counts, onScan, onManualCount, on
         </div>
       )}
 
-      {scanError && (
-        <div style={s.errorBanner}>{scanError}</div>
-      )}
+      {scanError && <div style={s.errorBanner}>{scanError}</div>}
 
       {/* Recent counts list */}
       {totalItems > 0 && (
@@ -186,6 +230,10 @@ const s = {
   headerTitle: { color: '#fff', fontSize: 20, fontWeight: 700 },
   headerSub: { color: '#93c5fd', fontSize: 13 },
   reviewBtn: { background: '#fff', color: '#1d4ed8', border: 'none', borderRadius: 20, padding: '8px 16px', fontWeight: 700, fontSize: 14, cursor: 'pointer' },
+  camBtn: { background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.4)', borderRadius: 20, padding: '8px 14px', fontSize: 13, cursor: 'pointer' },
+  cameraPicker: { background: '#1e3a8a', padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 6 },
+  cameraOption: { background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, padding: '10px 14px', fontSize: 13, cursor: 'pointer', textAlign: 'left' },
+  cameraOptionActive: { background: 'rgba(255,255,255,0.3)', fontWeight: 700 },
   cameraWrap: { position: 'relative', width: '100%', aspectRatio: '4/3', background: '#000', maxHeight: 280, overflow: 'hidden' },
   video: { width: '100%', height: '100%', objectFit: 'cover' },
   scanLine: { position: 'absolute', left: '10%', right: '10%', top: '50%', height: 2, background: '#ef4444', boxShadow: '0 0 8px #ef4444' },
