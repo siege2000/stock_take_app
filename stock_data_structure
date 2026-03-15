@@ -1,0 +1,196 @@
+Stock Take Table
+SELECT TOP (1000) [StockTakeID]
+      ,[DateCreated]
+      ,[Type]
+      ,[OrderByGenericName]
+      ,[StockTakeGuid]
+      ,[StockTakeDateModified]
+  FROM [LOTSSQL].[dbo].[StockTake]
+
+  StockTakeID DateCreated                 Type                 OrderByGenericName StockTakeGuid                            StockTakeDateModified
+----------- --------------------------- -------------------- ------------------ ---------------------------------------- ---------------------------
+3           2025-10-15 14:17:41         D000000000000000     0                  4F2BEEC6B2B54788A9164E7B4C848D73         2025-10-15 14:17:41
+
+SELECT TOP (10) [StockTakeID]
+      ,[StockID]
+      ,[StockTakeItemsID]
+      ,[StockTakeItemsGuid]
+      ,[StockTakeItemsDateModified]
+      ,[stkStocKBatchID]
+  FROM [LOTSSQL].[dbo].[StockTakeItems]
+
+  StockTakeID StockID     StockTakeItemsID StockTakeItemsGuid                       StockTakeItemsDateModified  stkStocKBatchID
+----------- ----------- ---------------- ---------------------------------------- --------------------------- ---------------
+3           7187        105175           76B9815A63FC4B9AA0B301B444ACA95F         2025-10-15 14:17:41         NULL
+3           3548        105176           19C85AD3FAC343F380B5A393F2E367EA         2025-10-15 14:17:41         NULL
+3           205278      105177           03CC54C36F084F589F602F4C5ED5A0FC         2025-10-15 14:17:41         NULL
+3           205279      105178           F7E2EE80E9C047F5B56D827AB6AB8954         2025-10-15 14:17:41         NULL
+3           205280      105179           A591432358A445E8BD9890606863088C         2025-10-15 14:17:41         NULL
+3           227277      105180           BF862E94207D46CC9672C0AAC7DBDC28         2025-10-15 14:17:41         NULL
+3           9170        105181           A669985816014E02BB2A1E4630E9A773         2025-10-15 14:17:41         NULL
+3           9168        105182           529D53B8058A4F29910ACE22B49ED10D         2025-10-15 14:17:41         NULL
+3           211752      105183           69101AF0155B49C3A4B56DB9759F58C2         2025-10-15 14:17:41         NULL
+3           208258      105184           E64BB36975E949D6A8006DD3E33AA21D         2025-10-15 14:17:41         NULL
+
+SELECT TOP (10) [StockID]
+      ,[TradeName]
+      ,[ProductGroupID]
+      ,[ProductClassID]
+      ,[ClubID]
+      ,[PackSize]
+      ,[OuterSize]
+      ,[OrderSize]
+      ,[ExtraInfo]
+      ,[Expected]
+      ,[SOH]
+      ,[MinimumSOH]
+      ,[MTD]
+      ,[SOO]
+      ,[ValueMTD]
+      ,[Retail]
+      ,[AverageRetail]
+      ,[Cost]
+      ,[OldCost]
+      ,[RealCost]
+      ,[AverageCost]
+      ,[Fillup]
+      ,[OrderVariance]
+      ,[MonthsAccurate]
+      ,[MonthsAccurateCount]
+      ,[Date]
+      ,[DateCreated]
+      ,[POSLookup]
+      ,[Beep]
+      ,[Reorder]
+      ,[ReorderAfterDate]
+      ,[Labels]
+      ,[Priced]
+      ,[AskPrice]
+      ,[Label]
+      ,[Message]
+      ,[ListCost]
+      ,[Markup]
+      ,[PLU]
+      ,[HotKey]
+      ,[ReorderNow]
+      ,[NewCostPrice]
+      ,[ClubPoints]
+      ,[ecommerce]
+      ,[SizeCategory]
+      ,[StockGST]
+      ,[PosRM]
+      ,[PosOTC]
+      ,[AskSerialNumber]
+      ,[ProductRef]
+      ,[IgnoreHOUpdate]
+      ,[StockCommentID]
+      ,[PrintStickers]
+      ,[PrintShelfLabels]
+      ,[Export]
+      ,[OrderOnDate]
+      ,[OrderQuantity]
+      ,[LastStocktake]
+      ,[ActiveSpecialID]
+      ,[NoLoyaltyPoints]
+      ,[StockType]
+      ,[NoDiscount]
+      ,[MaxDiscount]
+      ,[NoChangeSOH]
+      ,[PackListCost]
+      ,[HOStockID]
+      ,[EpayType]
+      ,[LastUpdated]
+      ,[ConvID]
+      ,[MultiBuy]
+      ,[MultiBuyRetail]
+      ,[OldRetail]
+      ,[ColdChain]
+      ,[TStockID]
+      ,[StockGuid]
+      ,[skDeleted]
+      ,[PriceBySupplier]
+      ,[PricingMethod]
+      ,[DontRoundStockcard]
+      ,[skVoucherTypeID]
+      ,[MatchWithHS]
+      ,[InRobotLocationType]
+      ,[InRobotSOH]
+      ,[RoboticStatus]
+      ,[InternetStoreID]
+      ,[skSupplierNote]
+      ,[CompoundingShortName]
+      ,[CompoundingDevice]
+      ,[CompoundingMeasure]
+      ,[CompoundingLiquid]
+      ,[CompoundingDisplace]
+      ,[CompoundingBase]
+      ,[CompoundingActive]
+      ,[CompoundingExcipient]
+      ,[CompoundingIngredient]
+      ,[RecommendedRetail]
+      ,[BestRule]
+      ,[CompoundingAdjustmentFactor]
+      ,[CompoundingDefaultUnitID]
+      ,[ConversionID]
+      ,[UseOwnTradename]
+      ,[CompoundingIngredientType]
+      ,[UseProductGroupTax]
+      ,[CountryOfOriginID]
+      ,[LiquidDensity]
+      ,[stRobotID]
+      ,[ActiveInternetSpecialID]
+      ,[stNonPrintableDisplayDetails]
+      ,[stNoOfDaysSupply]
+      ,[stUseElectronicShelfLabel]
+  FROM [LOTSSQL].[dbo].[Stock]
+
+  StockID     TradeName                                ProductGroupID ProductClassID ClubID      PackSize      OuterSize     OrderSize ExtraInfo                 Expected      SOH           MinimumSOH  MTD           SOO           ValueMTD    Retail      AverageRetail Cost        OldCost     RealCost    AverageCost Fillup OrderVariance MonthsAccurate MonthsAccurateCount Date                        DateCreated                 POSLookup Beep  Reorder ReorderAfterDate            Labels Priced AskPrice Label                                    Message                                                                                                                                                                                                                                                          ListCost    Markup        PLU        HotKey ReorderNow NewCostPrice ClubPoints  ecommerce SizeCategory StockGST      PosRM PosOTC AskSerialNumber ProductRef IgnoreHOUpdate StockCommentID PrintStickers PrintShelfLabels Export OrderOnDate                 OrderQuantity LastStocktake               ActiveSpecialID NoLoyaltyPoints StockType   NoDiscount MaxDiscount   NoChangeSOH PackListCost HOStockID   EpayType    LastUpdated                 ConvID      MultiBuy    MultiBuyRetail OldRetail             ColdChain TStockID    StockGuid                                skDeleted PriceBySupplier PricingMethod DontRoundStockcard skVoucherTypeID MatchWithHS InRobotLocationType InRobotSOH    RoboticStatus InternetStoreID                                    skSupplierNote                                                                                                                                                                                                                                                   CompoundingShortName           CompoundingDevice CompoundingMeasure CompoundingLiquid CompoundingDisplace CompoundingBase CompoundingActive CompoundingExcipient CompoundingIngredient RecommendedRetail BestRule    CompoundingAdjustmentFactor CompoundingDefaultUnitID ConversionID                                       UseOwnTradename CompoundingIngredientType UseProductGroupTax CountryOfOriginID LiquidDensity stRobotID   ActiveInternetSpecialID stNonPrintableDisplayDetails                       stNoOfDaysSupply stUseElectronicShelfLabel
+----------- ---------------------------------------- -------------- -------------- ----------- ------------- ------------- --------- ------------------------- ------------- ------------- ----------- ------------- ------------- ----------- ----------- ------------- ----------- ----------- ----------- ----------- ------ ------------- -------------- ------------------- --------------------------- --------------------------- --------- ----- ------- --------------------------- ------ ------ -------- ---------------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ----------- ------------- ---------- ------ ---------- ------------ ----------- --------- ------------ ------------- ----- ------ --------------- ---------- -------------- -------------- ------------- ---------------- ------ --------------------------- ------------- --------------------------- --------------- --------------- ----------- ---------- ------------- ----------- ------------ ----------- ----------- --------------------------- ----------- ----------- -------------- --------------------- --------- ----------- ---------------------------------------- --------- --------------- ------------- ------------------ --------------- ----------- ------------------- ------------- ------------- -------------------------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ------------------------------ ----------------- ------------------ ----------------- ------------------- --------------- ----------------- -------------------- --------------------- ----------------- ----------- --------------------------- ------------------------ -------------------------------------------------- --------------- ------------------------- ------------------ ----------------- ------------- ----------- ----------------------- -------------------------------------------------- ---------------- -------------------------
+2           ACETEST                                  0              0              0           100           1             0                                   0             0             0           0             0             0           0           0             564         0           0           0           0      0             134            134                 NULL                        1996-03-19 00:00:00         0         0     0       NULL                        0      1      0        ACETEST                                                                                                                                                                                                                                                                                                   0           -100          200026     0      0          0            0           0         0            15            0     0      0                          0              0              0             0                0      NULL                        0             2018-05-10 00:00:00         0               0               1           0          0             0           0            0           0           2022-08-31 14:48:39         0           0           0              0.00                  0         0           46e70f4d6e43407c9156ccea235c1179         0         0               0             0                  0               0           0                   0             0                                                                NULL                                                                                                                                                                                                                                                                                            0                 0                  0                 0                   0               0                 0                    0                     0                 18                                                                                                                  0               0                         0                  0                 0             0           0                       NULL                                               NULL             NULL
+3           DOPERGIN 0.2MG T                         0              0              0           30            10            0                                   0             0             0           0             0             0           0           0             2716        2760        0           0           0      0             134            134                 NULL                        1996-03-19 00:00:00         0         0     0       NULL                        0      1      0        DOPERGIN 0.2MG T                                                                                                                                                                                                                                                                                          0           -100          701572     0      0          0            0           0         0            15            0     0      0                          0              0              0             1                0      NULL                        0             2024-02-14 16:21:20         0               0               1           0          0             0           0            0           0           2024-12-19 10:01:04         0           0           0              0.00                  0         0           795A17207BEA43BDBC77D66200504B05         0         0               0             0                  0               0           0                   0             0                                                                NULL                                                                                                                                                                                                                                                                                            0                 0                  0                 0                   0               0                 0                    0                     0                 18                                                                                                                  0               0                         0                  0                 0             0           0                                                                          NULL             NULL
+4           LORA M 1MG T                             0              0              0           500           1             0                                   0             0             0           0             0             0           2299        0             1110        0           1110        0           0      0             134            134                 NULL                        1996-03-19 00:00:00         0         0     1       NULL                        0      1      0        LORAPAM 1MG T                                                                                                                                                                                                                                                                                             0           80.1          205672     0      0          0            0           0         0            15            0     0      0                          0              0              0             0                0      NULL                        0             2024-02-14 16:54:13         0               0               1           0          0             0           0            0           0           2025-06-01 02:00:55         0           0           0              0.00                  0         0           cbd0dccaedf94080a3ffe88041b41d83         0         0               0             0                  0               0           0                   0             0                                                                NULL                                                                                                                                                                                                                                                                                            0                 0                  0                 0                   0               0                 0                    0                     0                 18                                                                                                                  0               0                         0                  0                 0             0           0                       NULL                                               NULL             NULL
+5           SELEGILINE 5MG T (AP)                    0              0              0           100           5             0                                   0             0             0           0             0             0           0           0             1773        1741        0           0           0      0             134            134                 NULL                        1996-03-19 00:00:00         0         0     0       NULL                        0      1      0        SELEGILINE 5MG T (AP)                                                                                                                                                                                                                                                                                     0           -100          229717     0      0          0            0           0         0            15            0     0      0                          0              0              0             0                0      NULL                        0             NULL                        0               0               1           0          0             0           0            0           0           2026-03-12 12:40:22         0           0           0              0.00                  0         0           9a74803c8c8a47d19b27e595aab1d760         0         0               0             0                  0               0           0                   0             0                                                                NULL                                                                                                                                                                                                                                                                                            0                 0                  0                 0                   0               0                 0                    0                     0                 18                                                                                                                  0               0                         0                  0                 0             0           NULL                    NULL                                               NULL             NULL
+6           ADALAT 10MG C                            0              0              0           100           1             0                                   0             0             0           0             0             0           0           0             3668        0           0           0           0      0             134            134                 NULL                        1996-03-19 00:00:00         0         0     0       NULL                        0      1      0        ADALAT 10MG C                                                                                                                                                                                                                                                                                             0           -100          200069     0      0          0            0           0         0            15            0     0      0                          0              0              0             0                0      NULL                        0             2020-02-21 00:00:00         0               0               1           0          0             0           0            0           0           2021-12-01 00:03:57         0           0           0              0.00                  0         0           31ed73a8d4d84669ac75c98f92fa88c0         0         0               0             0                  0               0           0                   0             0                                                                NULL                                                                                                                                                                                                                                                                                            0                 0                  0                 0                   0               0                 0                    0                     0                 18                                                                                                                  0               0                         0                  0                 0             0           0                       NULL                                               NULL             NULL
+7           ADALAT RETARD 20MG T                     0              0              0           60            1             0                                   0             0             0           0             0             0           0           0             2149        0           0           0           0      0             134            134                 NULL                        1996-03-19 00:00:00         0         0     0       NULL                        0      1      0        ADALAT RETARD 20MG T                                                                                                                                                                                                                                                                                      0           -100          509256     0      0          0            0           0         0            15            0     0      0                          0              0              0             0                0      NULL                        0             2020-02-21 00:00:00         0               0               1           0          0             0           0            0           0           2021-12-01 00:03:57         0           0           0              0.00                  0         0           5ddddb94f7474812bdf1756abb239437         0         0               0             0                  0               0           0                   0             0                                                                NULL                                                                                                                                                                                                                                                                                            0                 0                  0                 0                   0               0                 0                    0                     0                 18                                                                                                                  0               0                         0                  0                 0             0           0                       NULL                                               NULL             NULL
+8           ALBALON 0.1% EYE DROPS                   858            372            2           15            12            0                                   0             0             0           0             0             0           1150        0             614         671         603         0           0      0             134            134                 NULL                        1996-03-19 00:00:00         1         0     1       NULL                        0      1      0        ALBALON EYE DROPS                                                                                                                                                                                                                                                                                         0           62.87         200182     0      0          0            0           0         0            15            0     0      0                          0              0              0             1                0      NULL                        0             2025-10-25 13:37:28         0               0               0           0          0             0           0            0           0           2025-10-25 13:37:28         0           0           0              0.00                  0         2535        BB35565DA2E64EE6A3A29E1588E12EB8         0         0               0             0                  0               0           0                   0             0                                                                NULL                                                                                                                                                                                                                                                                                            0                 0                  0                 0                   0               0                 0                    0                     0                 18                                                                                                                  0               0                         0                  0                 0             0           0                                                                          NULL             NULL
+9           ALDECIN NASAL SPRAY                      0              0              0           200           1             0                                   0             0             0           0             0             0           0           0             1477        0           0           0           0      0             134            134                 NULL                        1996-03-19 00:00:00         0         0     0       NULL                        0      0      0        ALDECIN NASAL SPRAY                                                                                                                                                                                                                                                                                       0           -100          200247     0      0          0            0           0         0            15            0     0      0                          0              0              0             0                0      NULL                        0             2021-01-04 10:53:38         0               0               1           0          0             0           0            0           0           2021-12-01 00:03:57         0           0           0              0.00                  0         0           036992a5fdc8449082804967442845ce         0         0               0             0                  0               0           0                   0             0                                                                NULL                                                                                                                                                                                                                                                                                            0                 0                  0                 0                   0               0                 0                    0                     0                 18                                                                                                                  0               0                         0                  0                 0             0           0                       NULL                                               NULL             NULL
+10          ALDOMET 125MG T                          0              0              0           100           1             0                                   0             0             0           0             0             0           0           0             891         0           0           0           0      0             134            134                 NULL                        1996-03-19 00:00:00         0         0     0       NULL                        0      1      0        ALDOMET 125MG T                                                                                                                                                                                                                                                                                           0           -100          200255     0      0          0            0           0         0            15            0     0      0                          0              0              0             0                0      NULL                        0             2024-02-19 11:09:42         0               0               1           0          0             0           0            0           0           2024-02-19 11:09:42         0           0           0              0.00                  0         0           31eb7cf29d354a4cae645823f670b0d7         0         0               0             0                  0               0           0                   0             0                                                                NULL                                                                                                                                                                                                                                                                                            0                 0                  0                 0                   0               0                 0                    0                     0                 18                                                                                                                  0               0                         0                  0                 0             0           0                       NULL                                               NULL             NULL
+11          ALDOMET 250MG T                          0              0              0           100           1             0                                   0             0             0           0             0             0           0           0             1280        0           0           0           0      0             134            134                 NULL                        1996-03-19 00:00:00         0         0     0       NULL                        0      1      0        ALDOMET 250MG T                                                                                                                                                                                                                                                                                           0           -100          912018     0      0          0            0           0         0            15            0     0      0                          0              0              0             0                0      NULL                        0             2024-02-19 11:09:42         0               0               1           0          0             0           0            0           0           2024-02-19 11:09:42         0           0           0              0.00                  0         0           c53712f2876f4324ae910f83f0f0c672         0         0               0             0                  0               0           0                   0             0                                                                NULL                                                                                                                                                                                                                                                                                            0                 0                  0                 0                   0               0                 0                    0                     0                 18                                                                                                                  0               0                         0                  0                 0             0           0                       NULL                                               NULL             NULL
+
+SELECT TOP (10) [ShrinkageID]
+      ,[StockId]
+      ,[DateTime]
+      ,[QuantitySubtracted]
+      ,[StaffID]
+      ,[ReasonID]
+      ,[shrStockLocationID]
+      ,[ShrinkageGuid]
+      ,[ShrinkageDateModified]
+      ,[shSentToXero]
+      ,[shStockBatchID]
+      ,[shListcost]
+      ,[shRealcost]
+      ,[shAveragecost]
+      ,[shRetail]
+      ,[SOHBeforeSubtractInUnits]
+      ,[shPackSize]
+  FROM [LOTSSQL].[dbo].[Shrinkage]
+
+  ShrinkageID StockId     DateTime                    QuantitySubtracted StaffID     ReasonID    shrStockLocationID ShrinkageGuid                            ShrinkageDateModified       shSentToXero shStockBatchID shListcost    shRealcost    shAveragecost shRetail    SOHBeforeSubtractInUnits shPackSize
+----------- ----------- --------------------------- ------------------ ----------- ----------- ------------------ ---------------------------------------- --------------------------- ------------ -------------- ------------- ------------- ------------- ----------- ------------------------ -------------
+1           97938       2017-10-17 11:32:09         19                 27          1           0                  6FB09652384B43C295E4343675E87252         2022-10-30 20:30:55         0            0              0             0             0             NULL        NULL                     NULL
+2           200773      2017-10-17 15:44:18         2                  27          2           0                  A05241678FBF49E9B024A79C57F30BA2         2022-10-30 20:30:55         0            0              0             0             0             NULL        NULL                     NULL
+3           11240       2017-10-18 12:22:53         0                  0           3           0                  44FD003C0C764CE9A215F7F756C554BB         2022-10-30 20:30:55         0            0              0             0             0             NULL        NULL                     NULL
+4           9452        2017-10-18 14:05:38         -15                53          4           0                  2FF18DA237CA4835AE8A955375A46B31         2022-10-30 20:30:55         0            0              0             0             0             NULL        NULL                     NULL
+5           971         2017-10-18 15:00:31         120                58          5           0                  D5BE04CFD0C044B0B575AD046DFB2EEA         2022-10-30 20:30:55         0            0              0             0             0             NULL        NULL                     NULL
+6           195782      2017-10-18 16:06:58         2                  30          6           0                  D62CFBC1855842EE813985F5DDC2E71F         2022-10-30 20:30:55         0            0              0             0             0             NULL        NULL                     NULL
+7           156421      2017-10-18 16:48:56         -1                 30          7           0                  128392B8ACBF4693878B5CEF9F7ADE72         2022-10-30 20:30:55         0            0              0             0             0             NULL        NULL                     NULL
+8           10861       2017-10-18 17:02:21         1                  30          8           0                  DD7EEE88FA3F433B8C819B0ED27DB197         2022-10-30 20:30:55         0            0              0             0             0             NULL        NULL                     NULL
+9           9840        2017-10-18 17:24:40         -1200              57          9           0                  08D85D6287AF43D99443468D1FBB9987         2022-10-30 20:30:55         0            0              0             0             0             NULL        NULL                     NULL
+10          200722      2017-10-18 17:25:41         1200               57          10          0                  F2F2956642A34E75AF7287262D99E8F2         2022-10-30 20:30:55         0            0              0             0             0             NULL        NULL                     NULL
+
+(10 rows affected)
+
+
+Completion time: 2026-03-15T14:37:16.1655581+13:00
+
