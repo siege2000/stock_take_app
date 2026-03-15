@@ -1,183 +1,277 @@
 # Stock Take App
 
-A mobile stock-taking application for Android that communicates with an on-site SQL database over a local area network (LAN). The app is designed for warehouse, retail, or any environment where staff need to perform stock counts using a mobile device without requiring internet access.
+A mobile barcode-scanning stock take app for pharmacy use.
+Runs as a local web app (PWA) on Android devices over WiFi.
 
 ---
 
-## Architecture Overview
+## Architecture
 
 ```
-Android App  <-->  REST API Backend  <-->  SQL Database
-   (LAN)              (on-site server)        (on-site)
+Pharmacy PC (Windows)
+  └── Node.js backend (Express)
+        ├── Connects to LOTSSQL via mssql
+        ├── Serves React PWA as static files
+        └── Runs as a Windows Service
+
+Android devices (same WiFi network)
+  └── Chrome browser → http://[PC-IP]:3000
+        └── "Add to Home Screen" for app-like experience
 ```
 
-- **Android App** — Mobile front end used by staff to scan/enter stock counts
-- **Backend API** — Lightweight REST API running on a local server (Windows PC, NAS, or Raspberry Pi); never exposed to the internet
-- **SQL Database** — On-site database (SQL Server, MySQL, or PostgreSQL) containing product and stock data
-
-All communication stays within the local LAN. No internet connection is required during stock takes.
-
 ---
 
-## Requirements
+## First-Time Setup
 
-### Android Device
-- Android 8.0 (API 26) or higher
-- Connected to the site's Wi-Fi network
+### 1. Database — Add Stock Take reason
 
-### Backend Server (on-site)
-- Any machine on the LAN that can run Node.js (Windows, Linux, macOS, Raspberry Pi)
-- Node.js 18 or higher
-- Access to the SQL database (same machine or reachable over LAN)
-- Firewall allows inbound TCP on the configured port (default: `3000`) from LAN only
+Run this on LOTSSQL, then note the ID returned:
 
-### Database
-- SQL Server, MySQL/MariaDB, or PostgreSQL (configurable)
-- Existing product/stock schema, or use the provided schema setup script
+```sql
+INSERT INTO [LOTSSQL].[dbo].[ShrinkageReason] (Reason, ShrinkageReasonGUID, ShrinkageReasonDateModified)
+VALUES ('Mobile Stock Take', NEWID(), GETDATE())
 
----
+SELECT ReasonID FROM [LOTSSQL].[dbo].[ShrinkageReason] WHERE Reason = 'Mobile Stock Take'
+```
 
-## Backend Setup
+### 2. Configure the backend
 
-### 1. Install Node.js
+Edit `backend/config.json`:
 
-Download and install from [nodejs.org](https://nodejs.org) (LTS version recommended).
+```json
+{
+  "server": {
+    "port": 3000
+  },
+  "database": {
+    "server": "YOUR_SQL_SERVER_NAME_OR_IP",
+    "database": "LOTSSQL",
+    "user": "YOUR_SQL_USER",
+    "password": "YOUR_SQL_PASSWORD",
+    "options": {
+      "trustServerCertificate": true,
+      "enableArithAbort": true
+    }
+  },
+  "stockTake": {
+    "reasonId": 99,
+    "defaultStaffId": 27
+  },
+  "adminKey": "CHANGE_THIS_TO_A_STRONG_SECRET"
+}
+```
 
-### 2. Clone / Copy the Backend
+- `reasonId` — the ID returned from the SQL above
+- `defaultStaffId` — StaffID written to Shrinkage rows (27 for test)
+- `adminKey` — a secret string you choose, used to approve devices (keep it private)
 
-Copy the `backend/` folder to the server machine, then install dependencies:
+### 3. Install Node.js
 
-```bash
-cd backend
+Download and install Node.js (LTS) from https://nodejs.org
+
+Verify: `node --version`
+
+### 4. Build the app
+
+Run these commands on the pharmacy PC:
+
+```bat
+cd stock_take_app\frontend
+npm install
+npm run build
+
+cd ..\backend
 npm install
 ```
 
-### 3. Configure the Backend
+### 5. Test the server
 
-Copy the example environment file and edit it:
-
-```bash
-cp .env.example .env
+```bat
+cd stock_take_app\backend
+node server.js
 ```
 
-Edit `.env` with the correct values for the site:
+You should see: `Stock Take server running on port 3000`
 
-```env
-# Server
-PORT=3000
+Open `http://localhost:3000` in a browser to verify it loads.
 
-# Database type: mssql | mysql | postgres
-DB_TYPE=mssql
+### 6. Install as a Windows Service (auto-starts on reboot)
 
-# Database connection
-DB_HOST=localhost
-DB_PORT=1433
-DB_NAME=StockDB
-DB_USER=stock_user
-DB_PASSWORD=your_password_here
+Run once in an **Administrator** command prompt:
+
+```bat
+cd stock_take_app\backend
+node install-service.js
 ```
 
-### 4. (Optional) Set Up the Database Schema
+To uninstall the service later:
 
-If starting from scratch, run the provided setup script:
-
-```bash
-npm run db:setup
+```bat
+node install-service.js --uninstall
 ```
-
-### 5. Start the Backend
-
-```bash
-npm start
-```
-
-For automatic restart on failure, use PM2:
-
-```bash
-npm install -g pm2
-pm2 start server.js --name stock-api
-pm2 save
-pm2 startup   # follow the printed command to auto-start on boot
-```
-
-The API will be available at `http://<server-ip>:3000`. It binds to the local network interface only and is not accessible from outside the LAN.
 
 ---
 
-## Android App Setup
+## Device Authorisation
 
-### Installing the APK
+Every Android device must be approved before it can use the app.
+Devices self-register on first load — you then approve them using the commands below.
 
-1. Download the latest `stock-take-app.apk` from the Releases section of this repository.
-2. On the Android device, go to **Settings > Apps > Special app access > Install unknown apps** and allow your file manager.
-3. Open the APK file and install it.
+### Find the PC's IP address
 
-### Configuring the App
-
-On first launch, enter the backend server address:
-
-```
-http://192.168.1.50:3000
+```bat
+ipconfig
 ```
 
-Replace `192.168.1.50` with the actual LAN IP address of the server running the backend. This setting is saved and only needs to be entered once per device.
+Look for the IPv4 address on your network adapter (e.g. `192.168.1.50`).
+
+### Step 1 — Open the app on the Android device
+
+Navigate to `http://[PC-IP]:3000` in Chrome.
+The device will show: **"This device is awaiting approval."**
+
+### Step 2 — List pending devices
+
+Run on the pharmacy PC (replace `YOUR_ADMIN_KEY` with the value from config.json):
+
+**Windows:**
+```bat
+curl http://localhost:3000/api/devices -H "x-admin-key: YOUR_ADMIN_KEY"
+```
+
+**Mac/Linux:**
+```bash
+curl http://localhost:3000/api/devices \
+  -H "x-admin-key: YOUR_ADMIN_KEY"
+```
+
+You will see a list like:
+```json
+[
+  {
+    "id": "a1b2c3d4-0000-0000-0000-000000000000",
+    "token": "...",
+    "name": "Android-1234567890",
+    "approved": false,
+    "registeredAt": "2026-03-15T02:00:00.000Z"
+  }
+]
+```
+
+### Step 3 — Approve a device
+
+Copy the `id` from the list above:
+
+**Windows:**
+```bat
+curl -X PATCH http://localhost:3000/api/devices/DEVICE-ID-HERE ^
+  -H "x-admin-key: YOUR_ADMIN_KEY" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"approved\": true}"
+```
+
+**Mac/Linux:**
+```bash
+curl -X PATCH http://localhost:3000/api/devices/DEVICE-ID-HERE \
+  -H "x-admin-key: YOUR_ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"approved": true}'
+```
+
+### Step 4 — Tap "Check Again" on the Android device
+
+The device will now be granted access.
+
+### Revoke a device
+
+Same as approve, with `false`:
+
+**Windows:**
+```bat
+curl -X PATCH http://localhost:3000/api/devices/DEVICE-ID-HERE ^
+  -H "x-admin-key: YOUR_ADMIN_KEY" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"approved\": false}"
+```
 
 ---
 
-## Features
+## "Add to Home Screen" on Android
 
-- Barcode / QR code scanning for fast product lookup
-- Manual product code entry
-- View current stock levels for each product
-- Enter and submit stock counts
-- Stock count sessions (start a count, add lines, finalise)
-- Offline queue — counts taken during brief Wi-Fi drops are submitted automatically when reconnected
-- Simple admin screen to view and export completed count sessions
+1. Open Chrome and navigate to `http://[PC-IP]:3000`
+2. Tap the three-dot menu (top right)
+3. Tap **"Add to Home screen"**
+4. The app will open full-screen like a native app
 
 ---
 
-## Security
+## How It Works
 
-- The backend binds only to the local network interface; it will not accept connections from outside the LAN.
-- No data is sent to the internet at any point.
-- It is recommended to run the backend on a dedicated VLAN or behind the site's existing firewall.
-- Basic API key authentication is used between the app and the backend. The key is configured in `.env` and entered once in the app settings.
+### Scanning flow
+
+1. Enter staff initials and start a new stock take (or tap a recent one to resume)
+2. Point the camera at a 2D barcode — item loads automatically
+3. Each scan of the same item increments the count by 1
+4. Tap the counted number on screen to correct it manually
+5. Tap **Review** when done
+
+### Finalise
+
+- Shows all counted items with System SOH / Counted / Variance
+- Variances shown in red (loss) or green (gain)
+- Two-step confirmation before anything is written to the database
+- On confirm, writes to three tables in a single transaction:
+  - `StockTake` — one header row per session
+  - `StockTakeItems` — one row per counted item
+  - `Shrinkage` — one adjustment row per counted item
+
+### What gets written to Shrinkage
+
+| Column | Value |
+|---|---|
+| StockId | Scanned item |
+| DateTime | Time of finalise |
+| QuantitySubtracted | SOH − Counted qty (negative = stock gain) |
+| StaffID | `defaultStaffId` from config.json |
+| ReasonID | "Mobile Stock Take" reason ID from config.json |
+| SOHBeforeSubtractInUnits | SOH at time of scan |
 
 ---
 
-## Project Structure
+## Updates
 
-```
-stock_take_app/
-├── android/          # Android app source (React Native / Kotlin)
-├── backend/          # Node.js REST API
-│   ├── server.js
-│   ├── .env.example
-│   └── package.json
-├── db/
-│   └── schema.sql    # Database setup script
-└── readme.md
+After any code change, rebuild the frontend then restart the service:
+
+```bat
+cd stock_take_app\frontend
+npm run build
+
+net stop StockTakeApp
+net start StockTakeApp
 ```
 
 ---
 
 ## Troubleshooting
 
-| Problem | Check |
-|---|---|
-| App cannot connect to server | Confirm both devices are on the same Wi-Fi network. Check the IP address in app settings. |
-| Backend fails to start | Check `.env` database credentials. Confirm the database server is running and reachable. |
-| Firewall blocking connection | Allow inbound TCP on port `3000` from LAN addresses only in the server's firewall settings. |
-| Barcode not recognised | Ensure the product code in the database matches the barcode format exactly. |
+**"Cannot reach server" on device**
+- Confirm the Android device is on the same WiFi as the PC
+- Find the PC IP with `ipconfig` and use that address, not `localhost`
+- Allow inbound connections on port 3000 through Windows Firewall:
+  ```bat
+  netsh advfirewall firewall add rule name="StockTakeApp" dir=in action=allow protocol=TCP localport=3000
+  ```
 
----
+**Barcode not found**
+- Verify the PLU value in the database matches the number being scanned:
+  ```sql
+  SELECT StockID, TradeName, PLU FROM [LOTSSQL].[dbo].[Stock] WHERE PLU = 12345
+  ```
 
-## Contributing
+**Service won't install**
+- Must be run from an Administrator command prompt
 
-Pull requests are welcome. For significant changes, please open an issue first to discuss what you would like to change.
-
----
-
-## License
-
-MIT
+**Database connection error**
+- Check SQL Server allows remote connections
+- Check SQL Server Authentication is enabled (not Windows-only auth)
+- Verify `server`, `user`, and `password` in config.json

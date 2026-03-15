@@ -7,6 +7,10 @@ node_modules/
 .env.local
 .env.*.local
 
+# App config and runtime data (contain credentials and device tokens)
+backend/config.json
+backend/devices.json
+
 # Logs
 logs/
 *.log

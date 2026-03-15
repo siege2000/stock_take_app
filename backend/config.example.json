@@ -1,0 +1,21 @@
+{
+  "server": {
+    "port": 3000
+  },
+  "database": {
+    "server": "YOUR_SQL_SERVER_NAME_OR_IP",
+    "database": "LOTSSQL",
+    "user": "YOUR_SQL_USER",
+    "password": "YOUR_SQL_PASSWORD",
+    "options": {
+      "trustServerCertificate": true,
+      "enableArithAbort": true
+    }
+  },
+  "stockTake": {
+    "reasonId": 0,
+    "defaultStaffId": 0,
+    "note": "Set reasonId to the ID returned after inserting 'Mobile Stock Take' into ShrinkageReason. Set defaultStaffId to the relevant StaffID."
+  },
+  "adminKey": "CHANGE_THIS_TO_A_STRONG_SECRET"
+}
