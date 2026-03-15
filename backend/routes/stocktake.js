@@ -143,6 +143,15 @@ router.post('/:id/finalise', async (req, res) => {
       }
 
       await transaction.commit();
+
+      // Clean up — StockTake and StockTakeItems are now recorded in Shrinkage
+      await pool.request()
+        .input('stockTakeId', sql.Int, stockTakeId)
+        .query(`
+          DELETE FROM [dbo].[StockTakeItems] WHERE StockTakeID = @stockTakeId;
+          DELETE FROM [dbo].[StockTake] WHERE StockTakeID = @stockTakeId;
+        `);
+
       res.json({ success: true, itemCount: items.length });
     } catch (err) {
       await transaction.rollback();
@@ -150,7 +159,7 @@ router.post('/:id/finalise', async (req, res) => {
     }
   } catch (err) {
     console.error('Finalise error:', err);
-    res.status(500).json({ error: 'Database error' });
+    res.status(500).json({ error: err.message });
   }
 });
 

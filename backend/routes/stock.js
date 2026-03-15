@@ -14,7 +14,7 @@ router.get('/lookup', async (req, res) => {
     const result = await pool.request()
       .input('barcode', sql.VarChar(50), plu)
       .query(`
-        SELECT s.StockID, s.TradeName, s.SOH, s.PackSize
+        SELECT s.StockID, s.TradeName, s.SOH, s.PackSize, s.RealCost
         FROM [dbo].[Stock] s
         INNER JOIN [dbo].[Barcode] b ON b.StockID = s.StockID
         WHERE b.Barcode = @barcode

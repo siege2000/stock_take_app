@@ -74,8 +74,8 @@ export default function Scanner({ stockTakeId, counts, onScan, onManualCount, on
     setScanError('');
     try {
       const item = await lookupStock(plu);
-      onScan({ stockId: item.StockID, tradeName: item.TradeName, soh: item.SOH });
-      setLastScanned({ stockId: item.StockID, tradeName: item.TradeName, soh: item.SOH });
+      onScan({ stockId: item.StockID, tradeName: item.TradeName, soh: item.SOH, cost: item.RealCost });
+      setLastScanned({ stockId: item.StockID, tradeName: item.TradeName, soh: item.SOH, cost: item.RealCost });
     } catch (err) {
       setScanError(`Not found: ${plu}`);
       setLastScanned(null);

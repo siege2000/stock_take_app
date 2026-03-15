@@ -45,7 +45,7 @@ export default function App() {
   }
 
   function handleScan(item) {
-    // item: { stockId, tradeName, soh }
+    // item: { stockId, tradeName, soh, cost }
     setCounts((prev) => {
       const existing = prev[item.stockId];
       return {
@@ -53,6 +53,7 @@ export default function App() {
         [item.stockId]: {
           tradeName: item.tradeName,
           soh: item.soh,
+          cost: item.cost,
           countedQty: existing ? existing.countedQty + 1 : 1,
         },
       };
